@@ -1,0 +1,286 @@
+<div class="pageBody" [ngClass]="{ loading: loading }">
+  <section class="results-section">
+    <div class="progress-status" *ngIf="loading">
+      <p class="eta">Time: {{ time }}s</p>
+      <p class="eta">ETA: {{ eta }}s</p>
+      <p class="progress">{{ progress }} %</p>
+      <p class="progress">Stp: {{ progStep }}/{{ progSteps }} </p>
+      <div class="loading-bar"></div>
+    </div>
+    <div class="result" *ngFor="let img of imgResult">
+      <img class="load-img" [src]="img === '' ? './../../assets/cubeloader9.gif' : img" alt="img" />
+    </div>
+    <div class="result-buttons">
+      <div class="div-open">
+        <button class="open-folder" (click)="openFolder()">
+          <mat-icon aria-hidden="true" fontIcon="folder_open"></mat-icon>
+          Open folder
+        </button>
+      </div>
+      <div class="div-clear">
+        <button class="clear-button" (click)="clear()">
+          <mat-icon aria-hidden="true" fontIcon="clear"></mat-icon>
+          Clear Results
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="prompt-secction">
+    <div class="buttons">
+      <div class="generate" *ngIf="!loading; else loadingImg">
+        <button class="generate-btn" (click)="generate()" [disabled]="blockScreen">Generate</button>
+      </div>
+      <ng-template #loadingImg>
+        <div class="load-div">
+          <button class="skip-btn" (click)="skip()">Skip</button>
+          <button class="interrupt-btn" (click)="interrupt()">Interrupt</button>
+        </div>
+        <div class="load-text">
+        </div>
+      </ng-template>
+      <div class="other-buttons">
+        <button class="last" [disabled]="blockScreen">
+          <mat-icon aria-hidden="false" fontIcon="restore_page"></mat-icon>
+        </button>
+        <button class="delete" (click)="clearPrompt()" [disabled]="blockScreen">
+          <mat-icon aria-hidden="false" fontIcon="delete"></mat-icon>
+        </button>
+        <button class="useExtras" [disabled]="blockScreen">
+          <mat-icon aria-hidden="false" fontIcon="widgets"></mat-icon>
+        </button>
+        <button class="applyStyle" [disabled]="blockScreen">
+          <mat-icon aria-hidden="false" fontIcon="content_paste"></mat-icon>
+        </button>
+        <button class="saveStyle" [disabled]="blockScreen">
+          <mat-icon aria-hidden="false" fontIcon="save"></mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="styles">
+      <select name="style-list" class="style-list" [disabled]="blockScreen">
+        <option value="none">none</option>
+      </select>
+      <button class="refresh" [disabled]="blockScreen">
+        <mat-icon aria-hidden="false" aria-label="home icon" fontIcon="refresh"></mat-icon>
+      </button>
+    </div>
+
+    <div class="prompt">
+      <label for="prompt">Prompt</label>
+      <textarea class="prompt" [(ngModel)]="params.prompt" [disabled]="blockScreen"></textarea>
+    </div>
+
+    <div class="negativePrompt">
+      <label for="prompt">NegativePrompt</label>
+      <textarea
+        class="negativePrompt"
+        [(ngModel)]="params.negative_prompt"
+        [disabled]="blockScreen"></textarea>
+    </div>
+  </section>
+
+  <section class="sample-section">
+    <div class="sampling">
+      <div class="methods">
+        <label for="sampling-methods">Sampling Methods</label>
+        <select
+          class="sampling-methods"
+          name="sampling-methods"
+          [(ngModel)]="params.sampler_name"
+          [disabled]="blockScreen">
+          <option *ngFor="let samp of samplers" [value]="samp">
+            {{ samp }}
+          </option>
+        </select>
+      </div>
+
+      <div class="steps">
+        <label for="sampling-steps">Sampling Steps</label>
+        <input
+          class="steps-input"
+          type="number"
+          min="1"
+          max="150"
+          value="30"
+          [(ngModel)]="params.steps"
+          [disabled]="blockScreen"
+          id="steps-input" />
+        <input
+          #slide
+          class="steps-slide"
+          type="range"
+          min="1"
+          max="150"
+          [(ngModel)]="params.steps"
+          [disabled]="blockScreen"
+          id="steps-slide" />
+      </div>
+    </div>
+
+    <div class="post-processing">
+      <input
+        class="restore-faces"
+        type="checkbox"
+        [(ngModel)]="params.restore_faces"
+        [disabled]="blockScreen" />
+      <label for="restore-faces">Restore Faces</label>
+
+      <input class="tilling" type="checkbox" [disabled]="blockScreen" />
+      <label for="tilling">Tiling</label>
+
+      <input class="hires-fix" type="checkbox" [disabled]="blockScreen" />
+      <label for="hi-resolution-fix">Hi-Res. Fix</label>
+    </div>
+
+    <div class="resolution">
+      <div class="resolution-sliders">
+        <div>
+          <label for="width">Width</label>
+          <input
+            class="input"
+            type="number"
+            min="64"
+            max="2048"
+            step="8"
+            [disabled]="blockScreen"
+            [(ngModel)]="params.width" />
+          <input
+            class="width slide"
+            type="range"
+            min="64"
+            max="2048"
+            step="8"
+            [disabled]="blockScreen"
+            [(ngModel)]="params.width" />
+        </div>
+        <div>
+          <label for="height">Height</label>
+          <input
+            class="input"
+            type="number"
+            min="64"
+            max="2048"
+            step="8"
+            value="512"
+            [disabled]="blockScreen"
+            [(ngModel)]="params.height" />
+          <input
+            class="height slide"
+            type="range"
+            min="64"
+            max="2048"
+            step="8"
+            value="512"
+            [disabled]="blockScreen"
+            [(ngModel)]="params.height" />
+        </div>
+      </div>
+
+      <div class="resolution-button">
+        <button class="switch" (click)="switchResolution()" [disabled]="blockScreen">
+          switch
+          <mat-icon aria-hidden="false" fontIcon="swap_vert"></mat-icon>
+          values
+        </button>
+      </div>
+    </div>
+
+    <div class="batch">
+      <div>
+        <label for="batch-count">Batch Count (n_iterações)</label>
+        <input
+          class="batch-count input"
+          type="number"
+          min="1"
+          max="100"
+          value="1"
+          [disabled]="blockScreen"
+          [(ngModel)]="params.n_iter" />
+        <input
+          class="batch-count slide"
+          type="range"
+          min="1"
+          max="100"
+          value="1"
+          [disabled]="blockScreen"
+          [(ngModel)]="params.n_iter" />
+      </div>
+
+      <div>
+        <label for="batch-size">Batch Size</label>
+        <input
+          class="batch-size input"
+          type="number"
+          min="1"
+          max="8"
+          value="1"
+          [disabled]="blockScreen"
+          [(ngModel)]="params.batch_size" />
+        <input
+          class="batch-size slide"
+          type="range"
+          min="1"
+          max="8"
+          value="1"
+          [disabled]="blockScreen"
+          [(ngModel)]="params.batch_size" />
+      </div>
+      <div>
+        <label for="cfg-scale">CFG Scale</label>
+        <input
+          class="cfg-scale input"
+          type="number"
+          min="1"
+          max="30"
+          value="5"
+          step="0.5"
+          [disabled]="blockScreen"
+          [(ngModel)]="params.cfg_scale" />
+        <input
+          class="cfg-scale slide"
+          type="range"
+          min="1"
+          max="30"
+          value="5"
+          step="0.5"
+          [disabled]="blockScreen"
+          [(ngModel)]="params.cfg_scale" />
+      </div>
+    </div>
+
+    <div class="seed">
+      <div class="seed-value">
+        <label for="seed-label">Seed</label>
+        <input
+          class="seed-input"
+          type="number"
+          min="-1"
+          [(ngModel)]="params.seed"
+          [disabled]="blockScreen" />
+      </div>
+      <div class="seed-buttons">
+        <button class="random" (click)="params.seed = -1" [disabled]="blockScreen">
+          <mat-icon aria-hidden="false" fontIcon="shuffle"></mat-icon>
+          <br />Random
+        </button>
+        <button class="recycle" [disabled]="blockScreen">
+          <mat-icon aria-hidden="false" fontIcon="recycling"></mat-icon>
+          <br />use Last
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <label for="model">Stable Diffusion checkpoint</label>
+      <select
+        name="model"
+        class="model"
+        [(ngModel)]="selectedModel"
+        (ngModelChange)="changeModel()"
+        [disabled]="blockScreen">
+        <option *ngFor="let modelo of modelos" [value]="modelo">{{ modelo }}</option>
+      </select>
+    </div>
+  </section>
+</div>
