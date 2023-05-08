@@ -19,6 +19,7 @@ export class HomeComponent implements OnInit {
   public progress: number = 0;
   public progStep: number = 0;
   public progSteps: number = 0;
+  public duration:number = 0;
   public selectedModel: string = '';
   public modelos = [
     'deliberate_v2.ckpt [b4391b7978]',
@@ -96,36 +97,35 @@ export class HomeComponent implements OnInit {
       };
   }
 
-  getProgress(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      const interval = setInterval(async () => {
+  getProgress() {
+      const interval = setInterval(() => {
         this.service.progress().subscribe((res: ProgressModel) => {
+          if (this.loading === false) {
+            clearInterval(interval);
+            return;
+          }
           this.eta = res.eta_relative? Math.round(res.eta_relative) : 0;
           this.progStep = res.state?.sampling_step ? (res.state.sampling_step) : 0;
           this.progSteps = res.state?.sampling_steps ? (res.state.sampling_steps) : 0;
           this.progress = res.progress? Math.round(res.progress * 100) : 0;
           const loadBar = document.querySelector('.loading-bar') as HTMLDivElement;
           loadBar.style.width = `${this.progress}%`
-          if (res.progress === 0) {
-            clearInterval(interval);
-            resolve();
-          }
           if (res.current_image) {
             const img = `data:image/png;base64,${res.current_image}`;
             this.imgResult.pop();
             this.imgResult.push(img);
-            of(res.progress);
           }
         });
       }, 2000);
-    });
   }
 
   countTime(){
     const interval = setInterval( () =>{
       this.time++
-      if (this.progress === 100){
+      if (this.loading === false) {
         clearInterval(interval);
+        this.duration = this.time;
+        this.time = 0;
       }
     }, 1000)
   }

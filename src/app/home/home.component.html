@@ -1,15 +1,18 @@
 <div class="pageBody" [ngClass]="{ loading: loading }">
   <section class="results-section">
+    <div class="result" *ngFor="let img of imgResult">
+      <img class="load-img" [src]="img === '' ? './../../assets/cubeloader9.gif' : img" alt="img" />
+      <div class="duration" *ngIf="img !== '' && loading === false">Duration: {{ duration }}s</div>
+    </div>
+
     <div class="progress-status" *ngIf="loading">
       <p class="eta">Time: {{ time }}s</p>
       <p class="eta">ETA: {{ eta }}s</p>
       <p class="progress">{{ progress }} %</p>
-      <p class="progress">Stp: {{ progStep }}/{{ progSteps }} </p>
+      <p class="progress">Stp: {{ progStep }}/{{ progSteps }}</p>
       <div class="loading-bar"></div>
     </div>
-    <div class="result" *ngFor="let img of imgResult">
-      <img class="load-img" [src]="img === '' ? './../../assets/cubeloader9.gif' : img" alt="img" />
-    </div>
+
     <div class="result-buttons">
       <div class="div-open">
         <button class="open-folder" (click)="openFolder()">
@@ -17,6 +20,7 @@
           Open folder
         </button>
       </div>
+
       <div class="div-clear">
         <button class="clear-button" (click)="clear()">
           <mat-icon aria-hidden="true" fontIcon="clear"></mat-icon>
@@ -36,8 +40,7 @@
           <button class="skip-btn" (click)="skip()">Skip</button>
           <button class="interrupt-btn" (click)="interrupt()">Interrupt</button>
         </div>
-        <div class="load-text">
-        </div>
+        <div class="load-text"></div>
       </ng-template>
       <div class="other-buttons">
         <button class="last" [disabled]="blockScreen">

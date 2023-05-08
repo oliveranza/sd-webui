@@ -52,18 +52,20 @@
 
     .result {
       display: flex;
+      flex-direction: column;
       background-color: aliceblue;
       border: 2px solid black;
       border-radius: 10px;
-      min-height: 359px;
+      height: fit-content;
       width: 99%;
       justify-content: center;
       align-items: center;
       margin: 10px 0;
+
     }
     .load-img {
       max-width: 340px;
-      min-height: 400px;
+      min-height: 340px;
       border-radius: 5px;
       object-fit: contain;
     }
@@ -108,8 +110,7 @@
 
     textarea {
       margin-top: 10px;
-      min-height: 150px;
-      height: fit-content;
+      min-height: 200px;
       font-size: 17px;
       font-family: sans-serif;
       font-weight: 600;
