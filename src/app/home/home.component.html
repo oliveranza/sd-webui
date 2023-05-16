@@ -1,7 +1,7 @@
 <div class="pageBody" [ngClass]="{ loading: loading }">
   <section class="results-section">
     <div class="result" *ngFor="let img of imgResult">
-      <img class="load-img" [src]="img === '' ? './../../assets/cubeloader9.gif' : img" alt="img" />
+      <img class="load-img" [src]="img === '' ? defaultImg : img" alt="img"/>
       <div class="duration" *ngIf="img !== '' && loading === false">Duration: {{ duration }}s</div>
     </div>
 
@@ -42,33 +42,46 @@
         </div>
         <div class="load-text"></div>
       </ng-template>
-      <div class="other-buttons">
-        <button class="last" [disabled]="blockScreen">
-          <mat-icon aria-hidden="false" fontIcon="restore_page"></mat-icon>
-        </button>
-        <button class="delete" (click)="clearPrompt()" [disabled]="blockScreen">
-          <mat-icon aria-hidden="false" fontIcon="delete"></mat-icon>
-        </button>
-        <button class="useExtras" [disabled]="blockScreen">
-          <mat-icon aria-hidden="false" fontIcon="widgets"></mat-icon>
-        </button>
-        <button class="applyStyle" [disabled]="blockScreen">
-          <mat-icon aria-hidden="false" fontIcon="content_paste"></mat-icon>
-        </button>
+    </div>
+    <div class="styles">
+      <div class="style-input-div">
+        <input
+          class="style-input"
+          placeholder="Type the new style name"
+          type="text"
+          [disabled]="blockScreen"
+          [(ngModel)]="stylename" />
         <button class="saveStyle" [disabled]="blockScreen">
-          <mat-icon aria-hidden="false" fontIcon="save"></mat-icon>
+          <mat-icon aria-hidden="false" fontIcon="save" (click)="saveStyle()"></mat-icon>
+        </button>
+      </div>
+      <div class="style-list">
+        <div class="other-buttons">
+          <button class="last" [disabled]="blockScreen">
+            <mat-icon aria-hidden="false" fontIcon="restore_page"></mat-icon>
+          </button>
+          <button class="delete" (click)="clearPrompt()" [disabled]="blockScreen">
+            <mat-icon aria-hidden="false" fontIcon="delete"></mat-icon>
+          </button>
+          <button class="useExtras" [disabled]="blockScreen">
+            <mat-icon aria-hidden="false" fontIcon="widgets"></mat-icon>
+          </button>
+          <button class="applyStyle" [disabled]="blockScreen" (click)="applySelectedStyle()">
+            <mat-icon aria-hidden="false" fontIcon="content_paste"></mat-icon>
+          </button>
+        </div>
+        <select
+          name="style-list-select"
+          class="style-list-select"
+          [(ngModel)]="selectedStyle"
+          [disabled]="blockScreen">
+          <option *ngFor="let style of styles" [ngValue]="style" >{{ style.name }}</option>
+        </select>
+        <button class="refresh" [disabled]="blockScreen" (click)="getStyles()">
+          <mat-icon aria-hidden="false" aria-label="home icon" fontIcon="refresh"></mat-icon>
         </button>
       </div>
     </div>
-    <div class="styles">
-      <select name="style-list" class="style-list" [disabled]="blockScreen">
-        <option value="none">none</option>
-      </select>
-      <button class="refresh" [disabled]="blockScreen">
-        <mat-icon aria-hidden="false" aria-label="home icon" fontIcon="refresh"></mat-icon>
-      </button>
-    </div>
-
     <div class="prompt">
       <label for="prompt">Prompt</label>
       <textarea class="prompt" [(ngModel)]="params.prompt" [disabled]="blockScreen"></textarea>

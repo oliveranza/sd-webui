@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { of } from 'rxjs';
-import { SDService } from '../core/services/SD/SD.Service';
-import { ProgressModel } from '../core/services/SD/model/ProgressModel';
-import { TextToImageRequest } from '../core/services/SD/model/TextToImageRequest';
-import { SavePhotoService } from '../core/services/save-photo/save-photo.service';
+import { FileService } from '../core/services/file-service/file.service';
+import { StyleModel } from '../core/services/file-service/model/StyleModel';
+import { ProgressModel } from '../core/services/sd-service/model/ProgressModel';
+import { TextToImageRequest } from '../core/services/sd-service/model/TextToImageRequest';
+import { SDService } from '../core/services/sd-service/sd.service';
 
 @Component({
   selector: 'app-home',
@@ -12,6 +12,7 @@ import { SavePhotoService } from '../core/services/save-photo/save-photo.service
 })
 export class HomeComponent implements OnInit {
   public loading: boolean = false;
+  public defaultImg = '';
   public imgResult: string[] = [''];
   public blockScreen = false;
   public time: number = 0;
@@ -19,7 +20,7 @@ export class HomeComponent implements OnInit {
   public progress: number = 0;
   public progStep: number = 0;
   public progSteps: number = 0;
-  public duration:number = 0;
+  public duration: number = 0;
   public selectedModel: string = '';
   public modelos = [
     'deliberate_v2.ckpt [b4391b7978]',
@@ -32,7 +33,6 @@ export class HomeComponent implements OnInit {
     'uberRealisticPornMerge_urpmv12.ckpt [500437805]',
     'uberRealisticPornMerge_urpmv13.safetensors [f93e6a50ac]',
   ];
-
   public samplers = [
     'Euler a',
     'Euler',
@@ -54,6 +54,9 @@ export class HomeComponent implements OnInit {
     'DDIM',
     'PLMS',
   ];
+  public stylename: string = '';
+  public selectedStyle: StyleModel={}as StyleModel;
+  public styles: StyleModel[] = [];
 
   public params: TextToImageRequest = new TextToImageRequest({
     sampler_name: this.samplers[15],
@@ -67,10 +70,12 @@ export class HomeComponent implements OnInit {
     restore_faces: true,
   });
 
-  constructor(private service: SDService, private photoService: SavePhotoService) {}
+  constructor(private sdService: SDService, private fileService: FileService) {}
 
   ngOnInit(): void {
     this.getModel();
+    this.getStyles();
+    this.randomBg()
   }
 
   generate() {
@@ -81,8 +86,9 @@ export class HomeComponent implements OnInit {
   }
 
   generateImage() {
+    this.randomBg();
     this.clear();
-    this.service.text2img(this.params).subscribe((res) => {
+    this.sdService.text2img(this.params).subscribe((res) => {
       this.loading = false;
       let imgs: string[] = [];
       res.images.forEach((element) => {
@@ -98,62 +104,88 @@ export class HomeComponent implements OnInit {
   }
 
   getProgress() {
-      const interval = setInterval(() => {
-        this.service.progress().subscribe((res: ProgressModel) => {
-          if (this.loading === false) {
-            clearInterval(interval);
-            return;
-          }
-          this.eta = res.eta_relative? Math.round(res.eta_relative) : 0;
-          this.progStep = res.state?.sampling_step ? (res.state.sampling_step) : 0;
-          this.progSteps = res.state?.sampling_steps ? (res.state.sampling_steps) : 0;
-          this.progress = res.progress? Math.round(res.progress * 100) : 0;
-          const loadBar = document.querySelector('.loading-bar') as HTMLDivElement;
-          loadBar.style.width = `${this.progress}%`
-          if (res.current_image) {
-            const img = `data:image/png;base64,${res.current_image}`;
-            this.imgResult.pop();
-            this.imgResult.push(img);
-          }
-        });
-      }, 2000);
+    const interval = setInterval(() => {
+      this.sdService.progress().subscribe((res: ProgressModel) => {
+        if (this.loading === false) {
+          clearInterval(interval);
+          return;
+        }
+        this.eta = res.eta_relative ? Math.round(res.eta_relative) : 0;
+        this.progStep = res.state?.sampling_step ? res.state.sampling_step : 0;
+        this.progSteps = res.state?.sampling_steps ? res.state.sampling_steps : 0;
+        this.progress = res.progress ? Math.round(res.progress * 100) : 0;
+        const loadBar = document.querySelector('.loading-bar') as HTMLDivElement;
+        loadBar.style.width = `${this.progress}%`;
+        if (res.current_image) {
+          const img = `data:image/png;base64,${res.current_image}`;
+          this.imgResult.pop();
+          this.imgResult.push(img);
+        }
+      });
+    }, 2000);
   }
 
-  countTime(){
-    const interval = setInterval( () =>{
-      this.time++
+  saveStyle() {
+    const data = [this.stylename, this.params.prompt, this.params.negative_prompt];
+    this.fileService.saveStyles(data as string[]).subscribe((res) => {
+      console.log(res);
+    });
+  }
+
+  getStyles() {
+    const list: StyleModel[] = [{name:'',prompt:'',negative_prompt:''}];
+    this.fileService.getStyles().subscribe((res) => {
+      res.map((ele, index) => {
+        if (index > 0) {
+          list.push(new StyleModel({ name: ele[0], prompt: ele[1], negative_prompt: ele[2] }));
+        }
+      });
+      this.styles = list;
+      this.selectedStyle=this.styles[0];
+    });
+  }
+
+  applySelectedStyle() {
+    this.params.prompt = this.selectedStyle.prompt
+    this.params.negative_prompt = this.selectedStyle.negative_prompt
+    this.selectedStyle = this.styles[0];
+  }
+
+  countTime() {
+    const interval = setInterval(() => {
+      this.time++;
       if (this.loading === false) {
         clearInterval(interval);
         this.duration = this.time;
         this.time = 0;
       }
-    }, 1000)
+    }, 1000);
   }
 
   interrupt() {
-    this.service.interrupt().subscribe((res) => console.log('interrompido'));
+    this.sdService.interrupt().subscribe((res) => console.log('interrompido'));
     this.loading = false;
   }
 
   skip() {
-    this.service.skip().subscribe((res) => console.log('skiped'));
+    this.sdService.skip().subscribe((res) => console.log('skiped'));
   }
 
   saveImage(img: string) {
-    this.photoService.savePhoto(img).subscribe((resp) => {
+    this.fileService.savePhoto(img).subscribe((resp) => {
       console.log(resp);
     });
   }
 
   openFolder() {
-    this.photoService.openFolder().subscribe((res) => console.log(res));
+    this.fileService.openFolder().subscribe((res) => console.log(res));
   }
 
   changeModel() {
     console.log('chamou changeModel');
     console.log(this.selectedModel);
     this.blockScreen = true;
-    this.service.setModel({ sd_model_checkpoint: this.selectedModel }).subscribe((res) => {
+    this.sdService.setModel({ sd_model_checkpoint: this.selectedModel }).subscribe((res) => {
       console.log(res);
       this.blockScreen = false;
     }),
@@ -163,7 +195,7 @@ export class HomeComponent implements OnInit {
   }
 
   getModel() {
-    this.service.getModel().subscribe((res) => {
+    this.sdService.getModel().subscribe((res) => {
       const model = res.sd_model_checkpoint;
       const index = this.modelos.indexOf(model ? model : '');
       this.selectedModel = this.modelos[index];
@@ -183,5 +215,10 @@ export class HomeComponent implements OnInit {
   clearPrompt() {
     this.params.prompt = '';
     this.params.negative_prompt = '';
+  }
+
+  randomBg(){
+    const num = Math.round( 1 + Math.random() * 19);
+    this.defaultImg = `./../../assets/loader${num}.gif`
   }
 }
