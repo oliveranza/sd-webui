@@ -1,0 +1,32 @@
+<div class="toast-main" *ngFor="let tost of toastList; let index = index">
+  <div class="toast-body toast-{{index}}">
+    <div
+      class="title"
+      [ngStyle]="{
+        backgroundColor:
+          tost.type === 'success'
+            ? '#00ff00'
+            : tost.type === 'info'
+            ? '#67e1ff'
+            : tost.type === 'warning'
+            ? '#d0ff00'
+            : '#ff0000'
+      }">
+      <mat-icon>
+        {{
+          tost.type === 'success'
+            ? 'check_circle'
+            : tost.type === 'info'
+            ? 'info'
+            : tost.type === 'warning'
+            ? 'warning'
+            : 'error'
+        }}
+      </mat-icon>
+      <p>{{ tost.title ? tost.title : tost.type | titlecase }}</p>
+    </div>
+    <div class="message">
+      <p class="message">{{ tost.message }}</p>
+    </div>
+  </div>
+</div>

@@ -4,6 +4,7 @@ import { StyleModel } from '../core/services/file-service/model/StyleModel';
 import { ProgressModel } from '../core/services/sd-service/model/ProgressModel';
 import { TextToImageRequest } from '../core/services/sd-service/model/TextToImageRequest';
 import { SDService } from '../core/services/sd-service/sd.service';
+import { ToastModel } from '../shared/components/toast/toast.model';
 
 @Component({
   selector: 'app-home',
@@ -11,6 +12,8 @@ import { SDService } from '../core/services/sd-service/sd.service';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
+  public newToast: ToastModel = {} as ToastModel;
+
   public loading: boolean = false;
   public defaultImg = '';
   public imgResult: string[] = [''];
@@ -55,7 +58,7 @@ export class HomeComponent implements OnInit {
     'PLMS',
   ];
   public stylename: string = '';
-  public selectedStyle: StyleModel={}as StyleModel;
+  public selectedStyle: StyleModel = {} as StyleModel;
   public styles: StyleModel[] = [];
 
   public params: TextToImageRequest = new TextToImageRequest({
@@ -72,10 +75,19 @@ export class HomeComponent implements OnInit {
 
   constructor(private sdService: SDService, private fileService: FileService) {}
 
+  callToast(msg: string, type: 'success' | 'error' | 'info' | 'warning', title?: string) {
+    this.newToast = new ToastModel({
+      message: msg,
+      type: type,
+      visible: true,
+      title: title,
+    });
+  }
+
   ngOnInit(): void {
     this.getModel();
     this.getStyles();
-    this.randomBg()
+    this.randomBg();
   }
 
   generate() {
@@ -127,13 +139,20 @@ export class HomeComponent implements OnInit {
 
   saveStyle() {
     const data = [this.stylename, this.params.prompt, this.params.negative_prompt];
-    this.fileService.saveStyles(data as string[]).subscribe((res) => {
-      console.log(res);
-    });
+    this.fileService.saveStyles(data as string[]).subscribe(
+      (res) => {
+        this.callToast(res.toString(), 'success');
+        this.stylename = '';
+      },
+      (error) => {
+        console.log(error);
+        this.callToast(error.error, 'error');
+      }
+    );
   }
 
   getStyles() {
-    const list: StyleModel[] = [{name:'',prompt:'',negative_prompt:''}];
+    const list: StyleModel[] = [{ name: '', prompt: '', negative_prompt: '' }];
     this.fileService.getStyles().subscribe((res) => {
       res.map((ele, index) => {
         if (index > 0) {
@@ -141,13 +160,13 @@ export class HomeComponent implements OnInit {
         }
       });
       this.styles = list;
-      this.selectedStyle=this.styles[0];
+      this.selectedStyle = this.styles[0];
     });
   }
 
   applySelectedStyle() {
-    this.params.prompt = this.selectedStyle.prompt
-    this.params.negative_prompt = this.selectedStyle.negative_prompt
+    this.params.prompt = this.selectedStyle.prompt;
+    this.params.negative_prompt = this.selectedStyle.negative_prompt;
     this.selectedStyle = this.styles[0];
   }
 
@@ -158,39 +177,50 @@ export class HomeComponent implements OnInit {
         clearInterval(interval);
         this.duration = this.time;
         this.time = 0;
+        this.progStep = 0;
+        this.progress = 0;
       }
     }, 1000);
   }
 
   interrupt() {
-    this.sdService.interrupt().subscribe((res) => console.log('interrompido'));
-    this.loading = false;
+    this.blockScreen = true;
+    this.sdService.interrupt().subscribe(() => {
+      setTimeout(() => {
+        this.callToast('Interrompido', 'info');
+        this.loading = false;
+      }, 3000);
+    });
   }
 
   skip() {
-    this.sdService.skip().subscribe((res) => console.log('skiped'));
+    this.sdService.skip().subscribe((res) => {
+      this.callToast('Pulado', 'info');
+    });
   }
 
   saveImage(img: string) {
-    this.fileService.savePhoto(img).subscribe((resp) => {
-      console.log(resp);
+    this.fileService.savePhoto(img).subscribe((res) => {
+      this.callToast(res.toString(), 'success');
+      this.blockScreen = false;
     });
   }
 
   openFolder() {
-    this.fileService.openFolder().subscribe((res) => console.log(res));
+    this.fileService.openFolder().subscribe((res) => {
+      this.callToast(res.toString(), 'success');
+    });
   }
 
   changeModel() {
-    console.log('chamou changeModel');
-    console.log(this.selectedModel);
     this.blockScreen = true;
     this.sdService.setModel({ sd_model_checkpoint: this.selectedModel }).subscribe((res) => {
-      console.log(res);
+      this.callToast(this.selectedModel + ' agora é o modulo usado.', 'success');
       this.blockScreen = false;
     }),
-      (err: any) => {
-        console.log(err);
+      (error: any) => {
+        this.callToast(error.error, 'error');
+        console.log(error);
       };
   }
 
@@ -199,6 +229,7 @@ export class HomeComponent implements OnInit {
       const model = res.sd_model_checkpoint;
       const index = this.modelos.indexOf(model ? model : '');
       this.selectedModel = this.modelos[index];
+      this.callToast(`${model}`, 'info', 'Selected Model');
     });
   }
 
@@ -217,8 +248,8 @@ export class HomeComponent implements OnInit {
     this.params.negative_prompt = '';
   }
 
-  randomBg(){
-    const num = Math.round( 1 + Math.random() * 19);
-    this.defaultImg = `./../../assets/loader${num}.gif`
+  randomBg() {
+    const num = Math.round(1 + Math.random() * 19);
+    this.defaultImg = `./../../assets/loader${num}.gif`;
   }
 }

@@ -1,0 +1,52 @@
+.toast-body {
+  margin: 2px;
+  width: 94vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  background-color: rgba(240, 248, 255, 0.8);
+  color: black;
+  border: 2px solid black;
+  border-radius: 15px;
+  position: fixed;
+  left: 2%;
+  font-size: 17px;
+  font-family: sans-serif;
+  font-weight: 700;
+  animation: appear 1.2s ease-in-out;
+
+
+  .title {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 5px;
+    border-top-right-radius: 15px;
+    border-top-left-radius: 15px;
+
+    p {
+      margin-left: 10px;
+      margin-bottom: 0;
+    }
+  }
+  .message {
+    padding: 5px;
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+@keyframes appear {
+  0%{
+    bottom: -20%;
+    opacity: 0;
+  }
+  10%{
+    opacity: 1;
+  }
+  100%{
+    opacity: 1;
+  }
+}

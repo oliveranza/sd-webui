@@ -6,7 +6,7 @@
     </div>
 
     <div class="progress-status" *ngIf="loading">
-      <p class="eta">Time: {{ time }}s</p>
+      <p class="time">Time: {{ time }}s</p>
       <p class="eta">ETA: {{ eta }}s</p>
       <p class="progress">{{ progress }} %</p>
       <p class="progress">Stp: {{ progStep }}/{{ progSteps }}</p>
@@ -17,14 +17,14 @@
       <div class="div-open">
         <button class="open-folder" (click)="openFolder()">
           <mat-icon aria-hidden="true" fontIcon="folder_open"></mat-icon>
-          Open folder
+          Open <br> Folder
         </button>
       </div>
 
       <div class="div-clear">
         <button class="clear-button" (click)="clear()">
           <mat-icon aria-hidden="true" fontIcon="clear"></mat-icon>
-          Clear Results
+          Clear <br> Results
         </button>
       </div>
     </div>
@@ -36,11 +36,10 @@
         <button class="generate-btn" (click)="generate()" [disabled]="blockScreen">Generate</button>
       </div>
       <ng-template #loadingImg>
-        <div class="load-div">
+        <div class="load-btn-div">
           <button class="skip-btn" (click)="skip()">Skip</button>
           <button class="interrupt-btn" (click)="interrupt()">Interrupt</button>
         </div>
-        <div class="load-text"></div>
       </ng-template>
     </div>
     <div class="styles">
@@ -300,3 +299,5 @@
     </div>
   </section>
 </div>
+
+<app-toast [toast]="newToast" ></app-toast>

@@ -1,5 +1,5 @@
 export class StyleModel {
-  constructor(init?: Partial<any>) {
+  constructor(init?: Partial<StyleModel>) {
     Object.assign(this, init);
   }
 

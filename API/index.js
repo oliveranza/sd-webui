@@ -39,7 +39,7 @@ app.get('/openFolder', (req, res) => {
     // em outros sistemas operacionais, usa o comando 'xdg-open'
     exec(`xdg-open`);
   }
-  return res.json('Opened');
+  return res.json('Pasta aberta com sucesso');
 });
 
 /**
@@ -85,7 +85,7 @@ app.post('/saveStyles', async (req, res) => {
         console.error(err);
         res.status(500).send('Failed to save styles');
       } else {
-        res.json('Arquivo salvo com sucesso!').status(200).send();
+        res.json('Style saved successfully!').status(200).send();
         console.log('Novo Style salvo: ');
         console.log(result[result.length-1]);
       }
