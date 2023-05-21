@@ -8,7 +8,9 @@
         [src]="img === '' ? defaultImg : img"
         alt="img"
         (click)="openImg(img)" />
-      <div class="duration" *ngIf="img !== '' && loading === false">Duration: {{ duration }}s</div>
+    </div>
+    <div class="duration" *ngIf="imgResult[0] !== '' && loading === false">
+      Duration: {{ duration }}s
     </div>
 
     <div class="progress-status" *ngIf="loading">
@@ -60,21 +62,26 @@
           [(ngModel)]="stylename" />
         <button class="saveStyle" [disabled]="blockScreen">
           <mat-icon aria-hidden="false" fontIcon="save" (click)="saveStyle()"></mat-icon>
+          Save
         </button>
       </div>
       <div class="style-list">
         <div class="other-buttons">
           <button class="last" [disabled]="blockScreen">
             <mat-icon aria-hidden="false" fontIcon="restore_page"></mat-icon>
+            Last
           </button>
           <button class="delete" (click)="clearPrompt()" [disabled]="blockScreen">
             <mat-icon aria-hidden="false" fontIcon="delete"></mat-icon>
+            Clear
           </button>
           <button class="useExtras" [disabled]="blockScreen">
             <mat-icon aria-hidden="false" fontIcon="widgets"></mat-icon>
+            Extras
           </button>
           <button class="applyStyle" [disabled]="blockScreen" (click)="applySelectedStyle()">
             <mat-icon aria-hidden="false" fontIcon="content_paste"></mat-icon>
+            Apply
           </button>
         </div>
         <select
@@ -86,6 +93,7 @@
         </select>
         <button class="refresh" [disabled]="blockScreen" (click)="getStyles()">
           <mat-icon aria-hidden="false" aria-label="home icon" fontIcon="refresh"></mat-icon>
+          Refresh
         </button>
       </div>
     </div>

@@ -1,7 +1,6 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 const express = require('express');
-const path = require('path');
 const bodyParser = require('body-parser');
 const { format } = require('date-fns');
 const { exec } = require('child_process');
@@ -50,18 +49,17 @@ app.post('/saveImage', (req, res) => {
 
 function defineFilepath(extname, seed) {
   const date = format(new Date(), 'yyyy-MM-dd');
-  const dirName = `D:/Repositorio Local/sd-webui/API/images/${date}`;
+  const dirName = `${__dirname}/images/${date}`;
   !fs.existsSync(dirName) && fs.mkdirSync(dirName);
 
   let filename = 0;
   const folder = fs.readdirSync(dirName);
-  folder.forEach((item) =>{
-    if (item.includes(filename.toString().padStart(4, '0'))){
-      filename++
+  folder.forEach((item) => {
+    if (item.includes(filename.toString().padStart(4, '0'))) {
+      filename++;
     }
-  })
+  });
   return `${dirName}/${filename.toString().padStart(4, '0')} - [${seed}]${extname}`;
-  
 }
 
 function checkImgData(data) {
@@ -92,13 +90,13 @@ function checkImgData(data) {
  * @returns {Object} Retorna uma resposta JSON indicando que a pasta foi aberta.
  */
 app.get('/openFolder', (req, res) => {
+  let command;
   if (process.platform === 'win32') {
-    // no Windows, usa o comando 'explorer'
-    exec(`explorer D:\\Repositorio Local\\sd-webui\\API\\images`);
+    command = 'explorer ';
   } else {
-    // em outros sistemas operacionais, usa o comando 'xdg-open'
-    exec(`xdg-open`);
+    command = 'xdg-open ';
   }
+  exec(`${command} ${__dirname}\\images`);
   return res.json('Pasta aberta com sucesso');
 });
 /**
@@ -107,13 +105,13 @@ app.get('/openFolder', (req, res) => {
  * @access Public
  * @returns {Object} Retorna uma resposta JSON com a lista de estilos salvas
  */
-app.get('/getStyles', async (req, res) =>{
+app.get('/getStyles', async (req, res) => {
   try {
-    res.status(200).send(await getCSV())
+    res.status(200).send(await getCSV());
   } catch (error) {
-    res.status(500).send(error)
+    res.status(500).send(error);
   }
-})
+});
 
 app.post('/saveStyles', async (req, res) => {
   const { data } = req.body;
@@ -137,7 +135,7 @@ app.post('/saveStyles', async (req, res) => {
       } else {
         res.json('Style saved successfully!').status(200).send();
         console.log('Novo Style salvo: ');
-        console.log(result[result.length-1]);
+        console.log(result[result.length - 1]);
       }
     });
   } catch (err) {
@@ -150,7 +148,7 @@ function getCSV() {
   return new Promise((resolve, reject) => {
     const results = [['name', 'prompt', 'negative_prompt']];
 
-    fs.createReadStream('D:/Repositorio Local/sd-webui/API/styles.csv')
+    fs.createReadStream(`${__dirname}/styles.csv`)
       .pipe(csv())
       .on('data', (data) => {
         data = Object.values(data);

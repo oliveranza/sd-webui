@@ -18,7 +18,7 @@ export class HomeComponent implements OnInit {
 
   public newToast: ToastModel = {} as ToastModel;
 
-  public imageInfo: InfoModel = {};
+  public imageInfo = {} as InfoModel;
 
   public loading: boolean = false;
   public defaultImg = '';
@@ -123,11 +123,12 @@ export class HomeComponent implements OnInit {
     this.sdService.text2img(this.params).subscribe((res) => {
       this.loading = false;
       let imgs: string[] = [];
-      res.images.forEach((element) => {
+      res.images.forEach((element, index) => {
         let img = `data:image/png;base64,${element}`;
         imgs.push(img);
         this.imageInfo = JSON.parse(res.info);
-        this.saveImage(img, this.imageInfo.seed);
+        const seed = this.imageInfo.all_seeds as number[]
+        this.saveImage(img, seed[index]);
       });
       this.imgResult = imgs;
     }),
@@ -271,7 +272,8 @@ export class HomeComponent implements OnInit {
 
   useLastSeed(){
     if(this.imageInfo.seed){
-      this.params.seed = this.imageInfo.seed;
+      const len = this.imageInfo.all_seeds.length;
+      this.params.seed = this.imageInfo.all_seeds[len-1];
     }
   }
 
