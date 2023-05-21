@@ -8,8 +8,8 @@ import { Observable } from 'rxjs';
 export class FileService {
   constructor(private client: HttpClient) {}
 
-  savePhoto(request: any) {
-    const req = JSON.parse(`{"data":"${request}"}`);
+  savePhoto(request: any, seed: number) {
+    const req = JSON.parse(`{"data":"${request}", "seed":${seed}}`);
     const options = {
       headers: {
         'Content-Type': 'application/json',

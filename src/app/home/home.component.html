@@ -1,7 +1,13 @@
+<app-modal [img]="zoomImg" (onClose)="closeImg($event)" [visible]="fullScreen"></app-modal>
+
 <div class="pageBody" [ngClass]="{ loading: loading }">
   <section class="results-section">
     <div class="result" *ngFor="let img of imgResult">
-      <img class="load-img" [src]="img === '' ? defaultImg : img" alt="img"/>
+      <img
+        class="load-img"
+        [src]="img === '' ? defaultImg : img"
+        alt="img"
+        (click)="openImg(img)" />
       <div class="duration" *ngIf="img !== '' && loading === false">Duration: {{ duration }}s</div>
     </div>
 
@@ -17,14 +23,16 @@
       <div class="div-open">
         <button class="open-folder" (click)="openFolder()">
           <mat-icon aria-hidden="true" fontIcon="folder_open"></mat-icon>
-          Open <br> Folder
+          Open <br />
+          Folder
         </button>
       </div>
 
       <div class="div-clear">
         <button class="clear-button" (click)="clear()">
           <mat-icon aria-hidden="true" fontIcon="clear"></mat-icon>
-          Clear <br> Results
+          Clear <br />
+          Results
         </button>
       </div>
     </div>
@@ -74,7 +82,7 @@
           class="style-list-select"
           [(ngModel)]="selectedStyle"
           [disabled]="blockScreen">
-          <option *ngFor="let style of styles" [ngValue]="style" >{{ style.name }}</option>
+          <option *ngFor="let style of styles" [ngValue]="style">{{ style.name }}</option>
         </select>
         <button class="refresh" [disabled]="blockScreen" (click)="getStyles()">
           <mat-icon aria-hidden="false" aria-label="home icon" fontIcon="refresh"></mat-icon>
@@ -279,7 +287,7 @@
           <mat-icon aria-hidden="false" fontIcon="shuffle"></mat-icon>
           <br />Random
         </button>
-        <button class="recycle" [disabled]="blockScreen">
+        <button class="recycle" (click)="useLastSeed()" [disabled]="blockScreen">
           <mat-icon aria-hidden="false" fontIcon="recycling"></mat-icon>
           <br />use Last
         </button>
@@ -300,4 +308,4 @@
   </section>
 </div>
 
-<app-toast [toast]="newToast" ></app-toast>
+<app-toast [toast]="newToast"></app-toast>

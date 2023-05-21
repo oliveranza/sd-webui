@@ -26,6 +26,66 @@ app.get('/teste', (req, res) => {
 });
 
 /**
+ * @description Salva uma imagem no servidor.
+ * @param {object} req - Objeto de requisição do Express.
+ * @param {object} req.body - Corpo da requisição contendo a imagem a ser salva.
+ * @param {string} req.body.data - Dados da imagem codificados em base64.
+ * @param {object} res - Objeto de resposta do Express.
+ * @returns {object} - Resposta contendo uma mensagem informando se a imagem foi salva com sucesso ou não.
+ */
+app.post('/saveImage', (req, res) => {
+  const { data, seed } = req.body;
+  const result = checkImgData(data);
+  const filepath = defineFilepath(result.extname, seed);
+
+  fs.writeFile(filepath, result.base64, { encoding: 'base64' }, (err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Failed to save image');
+    } else {
+      res.json('Image saved successfully').status(200).send();
+    }
+  });
+});
+
+function defineFilepath(extname, seed) {
+  const date = format(new Date(), 'yyyy-MM-dd');
+  const dirName = `D:/Repositorio Local/sd-webui/API/images/${date}`;
+  !fs.existsSync(dirName) && fs.mkdirSync(dirName);
+
+  let filename = 0;
+  const folder = fs.readdirSync(dirName);
+  folder.forEach((item) =>{
+    if (item.includes(filename.toString().padStart(4, '0'))){
+      filename++
+    }
+  })
+  return `${dirName}/${filename.toString().padStart(4, '0')} - [${seed}]${extname}`;
+  
+}
+
+function checkImgData(data) {
+  const reg = /^data:image\/([\w+]+);base64,([\s\S]+)/;
+  const match = data.match(reg);
+  let baseType = {
+    jpeg: 'jpg',
+  };
+
+  baseType['svg+xml'] = 'svg';
+
+  if (!match) {
+    throw new Error('image base64 data error');
+  }
+
+  const extname = baseType[match[1]] ? baseType[match[1]] : match[1];
+
+  return {
+    extname: '.' + extname,
+    base64: match[2],
+  };
+}
+
+/**
  * @description Abre a pasta de imagens do projeto no explorador do sistema operacional.
  * @route GET /openFolder
  * @access Public
@@ -41,29 +101,19 @@ app.get('/openFolder', (req, res) => {
   }
   return res.json('Pasta aberta com sucesso');
 });
-
 /**
- * @description Salva uma imagem no servidor.
- * @param {object} req - Objeto de requisição do Express.
- * @param {object} req.body - Corpo da requisição contendo a imagem a ser salva.
- * @param {string} req.body.data - Dados da imagem codificados em base64.
- * @param {object} res - Objeto de resposta do Express.
- * @returns {object} - Resposta contendo uma mensagem informando se a imagem foi salva com sucesso ou não.
+ * @description recupera a lista dos estilos.
+ * @route GET /getStyles
+ * @access Public
+ * @returns {Object} Retorna uma resposta JSON com a lista de estilos salvas
  */
-app.post('/saveImage', (req, res) => {
-  const { data } = req.body;
-  const result = checkImgData(data);
-  const filepath = defineFilepath(result.extname);
-
-  fs.writeFile(filepath, result.base64, { encoding: 'base64' }, (err) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Failed to save image');
-    } else {
-      res.json('Image saved successfully').status(200).send();
-    }
-  });
-});
+app.get('/getStyles', async (req, res) =>{
+  try {
+    res.status(200).send(await getCSV())
+  } catch (error) {
+    res.status(500).send(error)
+  }
+})
 
 app.post('/saveStyles', async (req, res) => {
   const { data } = req.body;
@@ -96,14 +146,6 @@ app.post('/saveStyles', async (req, res) => {
   }
 });
 
-app.get('/getStyles', async (req, res) =>{
-    try {
-      res.status(200).send(await getCSV())
-    } catch (error) {
-      res.status(500).send(error)
-    }
-})
-
 function getCSV() {
   return new Promise((resolve, reject) => {
     const results = [['name', 'prompt', 'negative_prompt']];
@@ -122,38 +164,4 @@ function getCSV() {
         reject(err);
       });
   });
-}
-
-function defineFilepath(extname) {
-  const date = format(new Date(), 'yyyy-MM-dd');
-  const dirName = `D:/Repositorio Local/sd-webui/API/images/${date}`;
-  !fs.existsSync(dirName) && fs.mkdirSync(dirName);
-
-  let filename = 0;
-  while (fs.existsSync(dirName + '/' + filename.toString().padStart(4, '0') + extname)) {
-    filename++;
-  }
-
-  return path.join(dirName, filename.toString().padStart(4, '0') + extname);
-}
-
-function checkImgData(data) {
-  const reg = /^data:image\/([\w+]+);base64,([\s\S]+)/;
-  const match = data.match(reg);
-  let baseType = {
-    jpeg: 'jpg',
-  };
-
-  baseType['svg+xml'] = 'svg';
-
-  if (!match) {
-    throw new Error('image base64 data error');
-  }
-
-  const extname = baseType[match[1]] ? baseType[match[1]] : match[1];
-
-  return {
-    extname: '.' + extname,
-    base64: match[2],
-  };
 }

@@ -1,4 +1,6 @@
-<div class="modal-body">
-  <p>Modal works</p>
-  <img src="img" alt="img">
+<div class="modal-body" *ngIf="visible">
+  <mat-icon style="color: red" (click)="fechar()">close</mat-icon>
+  <div>
+    <img [src]="img" alt="img" />
+  </div>
 </div>

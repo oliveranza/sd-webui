@@ -5,6 +5,7 @@ import { ProgressModel } from '../core/services/sd-service/model/ProgressModel';
 import { TextToImageRequest } from '../core/services/sd-service/model/TextToImageRequest';
 import { SDService } from '../core/services/sd-service/sd.service';
 import { ToastModel } from '../shared/components/toast/toast.model';
+import { InfoModel } from './model/infoModel';
 
 @Component({
   selector: 'app-home',
@@ -12,18 +13,25 @@ import { ToastModel } from '../shared/components/toast/toast.model';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
+  public fullScreen: boolean = false;
+  public zoomImg: string = '';
+
   public newToast: ToastModel = {} as ToastModel;
+
+  public imageInfo: InfoModel = {};
 
   public loading: boolean = false;
   public defaultImg = '';
   public imgResult: string[] = [''];
   public blockScreen = false;
+
   public time: number = 0;
   public eta: number = 0;
   public progress: number = 0;
   public progStep: number = 0;
   public progSteps: number = 0;
   public duration: number = 0;
+
   public selectedModel: string = '';
   public modelos = [
     'deliberate_v2.ckpt [b4391b7978]',
@@ -75,6 +83,18 @@ export class HomeComponent implements OnInit {
 
   constructor(private sdService: SDService, private fileService: FileService) {}
 
+  openImg(img: string){
+    if(!this.loading && this.imgResult[0] !== ''){
+      this.zoomImg = img;
+      this.fullScreen = true;
+    }
+  }
+
+  closeImg(event: any){
+    if (event === true)
+    this.fullScreen = false
+  }
+
   callToast(msg: string, type: 'success' | 'error' | 'info' | 'warning', title?: string) {
     this.newToast = new ToastModel({
       message: msg,
@@ -106,7 +126,8 @@ export class HomeComponent implements OnInit {
       res.images.forEach((element) => {
         let img = `data:image/png;base64,${element}`;
         imgs.push(img);
-        this.saveImage(img);
+        this.imageInfo = JSON.parse(res.info);
+        this.saveImage(img, this.imageInfo.seed);
       });
       this.imgResult = imgs;
     }),
@@ -199,8 +220,8 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  saveImage(img: string) {
-    this.fileService.savePhoto(img).subscribe((res) => {
+  saveImage(img: string, seed: any) {
+    this.fileService.savePhoto(img, seed).subscribe((res) => {
       this.callToast(res.toString(), 'success');
       this.blockScreen = false;
     });
@@ -246,6 +267,12 @@ export class HomeComponent implements OnInit {
   clearPrompt() {
     this.params.prompt = '';
     this.params.negative_prompt = '';
+  }
+
+  useLastSeed(){
+    if(this.imageInfo.seed){
+      this.params.seed = this.imageInfo.seed;
+    }
   }
 
   randomBg() {

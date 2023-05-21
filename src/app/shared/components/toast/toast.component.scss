@@ -20,7 +20,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    padding: 5px;
+    padding: 2px;
     border-top-right-radius: 15px;
     border-top-left-radius: 15px;
 
@@ -30,7 +30,7 @@
     }
   }
   .message {
-    padding: 5px;
+    padding: 3px;
 
     p {
       margin: 0;
@@ -49,4 +49,13 @@
   100%{
     opacity: 1;
   }
+}
+
+@media (min-width: 500px) {
+
+  .toast-body{
+    width: 35vw;
+    font-size: 13px;
+  }
+  
 }
